@@ -1,0 +1,53 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Kırılma indisleri
+n_core = 1.49
+n_clad = 1.45
+delta_n = n_core - n_clad
+
+# Δn varyasyonu için senaryo (analiz için)
+delta_n_values = [0.04, 0.03]  # n_core - n_clad
+
+# Bükülme parametreleri
+radii = np.linspace(2, 30, 500)  # bükülme yarıçapı (mm)
+freqs = np.linspace(1, 100, 500)  # mikro büküm frekansı (1/m)
+
+# Makro büküm kaybı: Δn azaldıkça daha çok kayıp (örnek model)
+def macro_loss(radius, delta_n):
+    return np.exp(-delta_n * radius / 2)
+
+# Mikro büküm kaybı: Δn azaldıkça hassasiyet artar (örnek model)
+def micro_loss(freq, delta_n):
+    return (1 - np.cos(2 * np.pi * freq / 20)) * (1 / delta_n)
+
+# Hesaplamalar
+macro_loss_1 = macro_loss(radii, delta_n_values[0])
+macro_loss_2 = macro_loss(radii, delta_n_values[1])
+
+micro_loss_1 = micro_loss(freqs, delta_n_values[0])
+micro_loss_2 = micro_loss(freqs, delta_n_values[1])
+
+# Grafik çizimi
+fig, axs = plt.subplots(1, 2, figsize=(14, 5))
+
+# Makro büküm grafiği
+axs[0].plot(radii, macro_loss_1, label=f"Δn = {delta_n_values[0]}")
+axs[0].plot(radii, macro_loss_2, label=f"Δn = {delta_n_values[1]}", linestyle='--')
+axs[0].set_title("Makro Büküm: Işık Kaybı vs Yarıçap")
+axs[0].set_xlabel("Bükülme Yarıçapı (mm)")
+axs[0].set_ylabel("Işık Kaybı (Normalize)")
+axs[0].legend()
+axs[0].grid(True)
+
+# Mikro büküm grafiği
+axs[1].plot(freqs, micro_loss_1, label=f"Δn = {delta_n_values[0]}")
+axs[1].plot(freqs, micro_loss_2, label=f"Δn = {delta_n_values[1]}", linestyle='--')
+axs[1].set_title("Mikro Büküm: Işık Kaybı vs Frekans")
+axs[1].set_xlabel("Büküm Frekansı (1/m)")
+axs[1].set_ylabel("Işık Kaybı (Normalize)")
+axs[1].legend()
+axs[1].grid(True)
+
+plt.tight_layout()
+plt.show()
